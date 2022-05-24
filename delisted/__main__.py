@@ -51,6 +51,9 @@ def make_output(
     symbol: str, closing_avg: float, template_dir: Path, output_dir: Path
 ) -> None:
     env = Environment(loader=FileSystemLoader(template_dir))
+
+    output_dir.mkdir(exist_ok=True)
+
     for template_name in env.list_templates():
         template = env.get_template(template_name)
         rendered_str = template.render(
@@ -60,7 +63,7 @@ def make_output(
         )
 
         output_file_path = output_dir / template_name.rstrip(".j2")
-        with output_file_path.open("w") as f:
+        with output_file_path.open("w+") as f:
             f.write(rendered_str)
 
 
