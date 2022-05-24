@@ -1,0 +1,20 @@
+body {
+    margin: 0%;
+    background-color: rgb(252, 177, 86);
+}
+
+.content {
+    font-family: 'Neucha', cursive;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.866);
+    font-size: x-large;
+}
+
+.center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
