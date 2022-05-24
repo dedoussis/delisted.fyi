@@ -1,9 +1,11 @@
 name: deploy
 
 on:
+  schedule:
+    - cron: "0 0 22 ? * MON,TUE,WED,THU *"
   push:
     branches:
-      - main
+      - "*"
 
 jobs:
   build-n-deploy:
