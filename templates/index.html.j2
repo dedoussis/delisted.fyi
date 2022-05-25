@@ -30,16 +30,16 @@
         const params = new Proxy(new URLSearchParams(window.location.search), {
             get: (searchParams, prop) => searchParams.get(prop),
         });
-        
-        let data = {{ json_data }}
+        let symbol = params.symbol && params.symbol.toLowerCase();
+        let data = {{ json_data }};
         const emojis = ["🍆", "💙", "⚽", "🏄‍♂️", "🐨", "🏝️", "🪄"];
         const random = Math.floor(Math.random() * emojis.length);
 
-        if (params.symbol && Object.keys(data).includes(params.symbol)) {
-            document.getElementById("title").innerHTML = "Is " + params.symbol.toUpperCase() + " delisted yet? <span role=\"img\" aria-label=\"random-emoji\">" + emojis[random] + "</span>";
-            document.getElementById("closingAvg").innerHTML=data[params.symbol].closingAvg;
-            document.getElementById("daysUntilDelisting").innerHTML=data[params.symbol].daysUntilDelisting;
-            document.getElementById("isDelisted").innerHTML=data[params.symbol].isDelisted? "YES": "NO"; 
+        if (symbol && Object.keys(data).includes(symbol)) {
+            document.getElementById("title").innerHTML = "Is " + symbol.toUpperCase() + " delisted yet? <span role=\"img\" aria-label=\"random-emoji\">" + emojis[random] + "</span>";
+            document.getElementById("closingAvg").innerHTML=data[symbol].closingAvg;
+            document.getElementById("daysUntilDelisting").innerHTML=data[symbol].daysUntilDelisting;
+            document.getElementById("isDelisted").innerHTML=data[symbol].isDelisted? "YES": "NO"; 
         }
     </script>
 </body>
