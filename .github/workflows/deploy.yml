@@ -1,8 +1,8 @@
 name: deploy
 
 on:
-  # schedule:
-  #   - cron: "0 0 22 ? * MON,TUE,WED,THU *"
+  schedule:
+    - cron: "0 0 22 ? * MON,TUE,WED,THU *"
   push:
     branches:
       - main
