@@ -1,5 +1,6 @@
 import argparse
 from collections import deque
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 import requests
@@ -11,6 +12,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 class DailyQuote:
     def __init__(self, raw_data: t.Mapping[str, str]) -> None:
@@ -45,8 +47,8 @@ class AlphaVantageClient:
 
 
 class DelistingData(t.NamedTuple):
-    closing_avg: float
-    days: int
+    current_closing_avg: float
+    days_until_delisting: int
     delisted: bool
 
 
@@ -59,34 +61,50 @@ def get_delisting_data(
     ts_daily = client.get_time_series_daily(symbol)
     sorted_closes = [v.close for _, v in sorted(ts_daily.items(), reverse=True)]
 
-    sorted_closes_window = deque(sorted_closes[:window_len])
+    sorted_closes_latest_window = deque(sorted_closes[:window_len])
+    latest_window_closing_sum = sum(sorted_closes_latest_window)
+    latest_closing_avg = latest_window_closing_sum / window_len
 
-    closing_avg = sum(sorted_closes_window) / window_len
+    closing_averages = [latest_closing_avg]
+    for i in range(window_len, len(sorted_closes)):
+        closing_averages.append(
+            closing_averages[-1]
+            + (sorted_closes[i] - sorted_closes[i - window_len]) / window_len
+        )
+
+    consecutive_days_below_threshold = 0
+    for ca in closing_averages:
+        if ca < closing_avg_threshold:
+            consecutive_days_below_threshold += 1
+        else:
+            break
 
     daily_rate_sum = 0
-    for i in range(1, len(sorted_closes_window)):
-        current = sorted_closes_window[i - 1]
-        previous = sorted_closes_window[i]
+    for i in range(1, len(sorted_closes_latest_window)):
+        current = sorted_closes_latest_window[i - 1]
+        previous = sorted_closes_latest_window[i]
 
         daily_rate_sum += (current - previous) / previous
 
     daily_rate = daily_rate_sum / window_len
-    days = -1
+
+    days_until_delisting = -1
     if daily_rate < 0:
-        days = 0
-        window_closing_sum = sum(sorted_closes_window)
-        while window_closing_sum >= closing_avg_threshold * window_len:
-            window_closing_sum -= sorted_closes_window.pop()
-            sorted_closes_window.appendleft(
-                sorted_closes_window[0] + (sorted_closes_window[0] * daily_rate)
+        days_until_below_threshold = 0
+        while latest_window_closing_sum >= closing_avg_threshold * window_len:
+            latest_window_closing_sum -= sorted_closes_latest_window.pop()
+            sorted_closes_latest_window.appendleft(
+                sorted_closes_latest_window[0]*(1+daily_rate)
             )
-            window_closing_sum += sorted_closes_window[0]
-            days += 1
+            latest_window_closing_sum += sorted_closes_latest_window[0]
+            days_until_below_threshold += 1
+
+        days_until_delisting = window_len + days_until_below_threshold - consecutive_days_below_threshold
 
     return DelistingData(
-        closing_avg=closing_avg,
-        days=days,
-        delisted=closing_avg < closing_avg_threshold,
+        current_closing_avg=closing_averages[0],
+        days_until_delisting=days_until_delisting,
+        delisted=consecutive_days_below_threshold > window_len,
     )
 
 

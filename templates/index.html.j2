@@ -27,8 +27,8 @@
         </h2>
         <h3>30 trading-day closing average: <span class="highlighted">{{ delisting_data.closing_avg }}</span></h2>
         <h3>Based on last month's performance the stock is predicted to go delisted in <span class="highlighted">
-            {%- if delisting_data.days >= 0 %}
-            {{ delisting_data.days }}
+            {%- if delisting_data.days_until_delisting >= 0 %}
+            {{ delisting_data.days_until_delisting }}
             {%- else %}
             ♾️
             {%- endif %}
