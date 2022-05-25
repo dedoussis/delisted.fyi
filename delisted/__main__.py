@@ -157,7 +157,7 @@ def get_delisting_data_for_symbols(
 ) -> t.Mapping[str, DelistingData]:
     dd = {}
     for i, symbol in enumerate(symbols):
-        if i % max_calls_per_min == max_calls_per_min:
+        if i % max_calls_per_min == max_calls_per_min-1:
             sleep(60)
 
         dd[symbol] = get_delisting_data(
