@@ -1,8 +1,9 @@
 import argparse
 from collections import deque
-from contextlib import closing
 from datetime import datetime
+import json
 from pathlib import Path
+from time import sleep
 import requests
 import typing as t
 
@@ -30,6 +31,7 @@ class AlphaVantageClient:
         self.requester.params["apikey"] = api_key  # type: ignore
 
     def get_time_series_daily(self, symbol: str) -> t.Mapping[datetime, DailyQuote]:
+        logger.info("Querying daily time series for %s", symbol)
         resp = self.requester.get(
             f"{self.base_url}/query",
             params={
@@ -37,7 +39,6 @@ class AlphaVantageClient:
                 "symbol": symbol,
             },
         ).json()
-
         ts_daily_raw: t.Mapping[str, t.Mapping[str, str]] = resp["Time Series (Daily)"]
 
         return {
@@ -50,6 +51,13 @@ class DelistingData(t.NamedTuple):
     current_closing_avg: float
     days_until_delisting: int
     delisted: bool
+
+    def to_json(self) -> t.Mapping[str, t.Any]:
+        return {
+            "closingAvg": self.current_closing_avg,
+            "daysUntilDelisting": self.days_until_delisting,
+            "isDelisted": self.delisted,
+        }
 
 
 def calculate_days_until_delisting(
@@ -140,9 +148,31 @@ def get_delisting_data(
     )
 
 
+def get_delisting_data_for_symbols(
+    client: AlphaVantageClient,
+    symbols: t.Sequence[str],
+    window_len: int,
+    closing_avg_threshold: float,
+    max_calls_per_min: int,
+) -> t.Mapping[str, DelistingData]:
+    dd = {}
+    for i, symbol in enumerate(symbols):
+        if i % max_calls_per_min == max_calls_per_min - 1:
+            sleep(120)
+
+        dd[symbol] = get_delisting_data(
+            client, symbol, window_len, closing_avg_threshold
+        )
+
+    return dd
+
+
 def make_output(
-    symbol: str, delisting_data: DelistingData, template_dir: Path, output_dir: Path
+    delisting_data: t.Mapping[str, DelistingData],
+    template_dir: Path,
+    output_dir: Path,
 ) -> None:
+    json_data = json.dumps({k: v.to_json() for k, v in delisting_data.items()})
     env = Environment(loader=FileSystemLoader(template_dir))
 
     output_dir.mkdir(exist_ok=True)
@@ -150,8 +180,7 @@ def make_output(
     for template_name in env.list_templates():
         template = env.get_template(template_name)
         rendered_str = template.render(
-            symbol=symbol,
-            delisting_data=delisting_data,
+            json_data=json_data,
             updated_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         )
 
@@ -162,7 +191,7 @@ def make_output(
 
 
 class Args(t.Protocol):
-    symbol: str
+    symbols: t.Sequence[str]
     apikey: str
     base_url: str
     template_dir: Path
@@ -177,8 +206,8 @@ class Namespace(t.Protocol):
 def build_parser() -> Namespace:
     parser = argparse.ArgumentParser(description="Delisted")
     parser.add_argument(
-        "--symbol",
-        help="Stock symbol (ticker)",
+        "--symbols",
+        nargs="+",
     )
     parser.add_argument(
         "--apikey",
@@ -207,10 +236,14 @@ def build_parser() -> Namespace:
 def main() -> None:
     args = build_parser().parse_args()
     client = AlphaVantageClient(base_url=args.base_url, api_key=args.apikey)
-    delisting_data = get_delisting_data(
-        client=client, symbol=args.symbol, window_len=30, closing_avg_threshold=1
+    delisting_data = get_delisting_data_for_symbols(
+        max_calls_per_min=4,
+        client=client,
+        symbols=args.symbols,
+        window_len=30,
+        closing_avg_threshold=1,
     )
-    make_output(args.symbol, delisting_data, args.template_dir, args.output_dir)
+    make_output(delisting_data, args.template_dir, args.output_dir)
 
 
 if __name__ == "__main__":

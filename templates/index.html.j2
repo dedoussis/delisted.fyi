@@ -19,24 +19,29 @@
 
 <body>
     <div class="center content">
-        <h1>Is {{ symbol.upper() }} delisted yet? 🍆</h1>
-        <h2 class="x-highlighted">
-            {%- if delisting_data.delisted %}
-            YES
-            {%- else %}
-            NO
-            {%- endif %}
-        </h2>
-        <h3>30 trading-day closing average: <span class="highlighted">{{ delisting_data.current_closing_avg }}</span></h2>
-        <h3>Based on last month's performance the stock is predicted to go delisted in <span class="highlighted">
-            {%- if delisting_data.days_until_delisting >= 0 %}
-            {{ delisting_data.days_until_delisting }}
-            {%- else %}
-            ♾️
-            {%- endif %}
-        </span> trading days.</h2>
+        <h1 id="title">Please select a valid symbol! ⚠️</h1>
+        <h2 class="x-highlighted" id="isDelisted"></h2>
+        <h3>30 trading-day closing average: <span class="highlighted" id="closingAvg">Boo!</span></h2>
+        <h3>Based on last month's performance the stock is predicted to go delisted in <span class="highlighted" id="daysUntilDelisting">Argh!</span> trading days.</h2>
         <h4>Last updated at <span class="highlighted">{{ updated_at }}</span></h3>
     </div>
+
+    <script>
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        
+        let data = {{ json_data }}
+        const emojis = ["🍆", "💙", "⚽", "🏄‍♂️", "🐨", "🏝️", "🪄"];
+        const random = Math.floor(Math.random() * emojis.length);
+
+        if (params.symbol) {
+            document.getElementById("title").innerHTML = "Is " + params.symbol.toUpperCase() + " delisted yet? <span role=\"img\" aria-label=\"random-emoji\">" + emojis[random] + "</span>";
+            document.getElementById("closingAvg").innerHTML=data[params.symbol].closingAvg;
+            document.getElementById("daysUntilDelisting").innerHTML=data[params.symbol].daysUntilDelisting;
+            document.getElementById("isDelisted").innerHTML=data[params.symbol].isDelisted? "YES": "NO"; 
+        }
+    </script>
 </body>
 
 </html>
