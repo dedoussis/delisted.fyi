@@ -67,14 +67,15 @@ def get_delisting_data(
         daily_rate_sum += (current - previous) / previous
 
     daily_rate = daily_rate_sum / window_len
-
     days = -1
     if daily_rate < 0:
         days = 0
         window_closing_sum = sum(sorted_closes_window)
         while window_closing_sum >= closing_avg_threshold * window_len:
             window_closing_sum -= sorted_closes_window.pop()
-            sorted_closes_window.appendleft(sorted_closes_window[0] + daily_rate)
+            sorted_closes_window.appendleft(
+                sorted_closes_window[0] + (sorted_closes_window[0] * daily_rate)
+            )
             window_closing_sum += sorted_closes_window[0]
             days += 1
 
