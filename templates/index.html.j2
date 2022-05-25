@@ -35,7 +35,7 @@
         const emojis = ["🍆", "💙", "⚽", "🏄‍♂️", "🐨", "🏝️", "🪄"];
         const random = Math.floor(Math.random() * emojis.length);
 
-        if (params.symbol) {
+        if (params.symbol && Object.keys(data).includes(params.symbol)) {
             document.getElementById("title").innerHTML = "Is " + params.symbol.toUpperCase() + " delisted yet? <span role=\"img\" aria-label=\"random-emoji\">" + emojis[random] + "</span>";
             document.getElementById("closingAvg").innerHTML=data[params.symbol].closingAvg;
             document.getElementById("daysUntilDelisting").innerHTML=data[params.symbol].daysUntilDelisting;

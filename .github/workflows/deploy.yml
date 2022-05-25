@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: make install
       - name: Build site
-        run: poetry run python -m delisted --symbols amzn fb tsla aapl msft googl pton lyft uber ual bbln --apikey ${{ secrets.ALPHAVANTAGE_APIKEY }}
+        run: poetry run python -m delisted --symbols amzn fb tsla aapl msft googl pton lyft uber ual bbln coin hood --apikey ${{ secrets.ALPHAVANTAGE_APIKEY }}
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

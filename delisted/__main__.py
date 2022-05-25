@@ -157,7 +157,7 @@ def get_delisting_data_for_symbols(
 ) -> t.Mapping[str, DelistingData]:
     dd = {}
     for i, symbol in enumerate(symbols):
-        if i % max_calls_per_min == max_calls_per_min - 1:
+        if i % max_calls_per_min == max_calls_per_min:
             sleep(60)
 
         dd[symbol] = get_delisting_data(
@@ -237,7 +237,7 @@ def main() -> None:
     args = build_parser().parse_args()
     client = AlphaVantageClient(base_url=args.base_url, api_key=args.apikey)
     delisting_data = get_delisting_data_for_symbols(
-        max_calls_per_min=4,
+        max_calls_per_min=5,
         client=client,
         symbols=args.symbols,
         window_len=30,
