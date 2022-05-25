@@ -158,7 +158,7 @@ def get_delisting_data_for_symbols(
     dd = {}
     for i, symbol in enumerate(symbols):
         if i % max_calls_per_min == max_calls_per_min - 1:
-            sleep(120)
+            sleep(60)
 
         dd[symbol] = get_delisting_data(
             client, symbol, window_len, closing_avg_threshold
