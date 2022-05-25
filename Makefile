@@ -4,7 +4,10 @@ clean:
 format:
 	black .
 
+typecheck:
+	mypy --package delisted --strict
+
 install: clean
 	poetry install
 
-.PHONY: clean format install
+.PHONY: clean format install typecheck

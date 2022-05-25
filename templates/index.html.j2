@@ -13,6 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Acme&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="styles.css">
+
+    <script defer data-domain="delisted.fyi" src="https://plausible.io/js/plausible.js"></script>
 </head>
 
 <body>
@@ -25,7 +27,7 @@
             NO
             {%- endif %}
         </h2>
-        <h3>30 trading-day closing average: <span class="highlighted">{{ delisting_data.closing_avg }}</span></h2>
+        <h3>30 trading-day closing average: <span class="highlighted">{{ delisting_data.current_closing_avg }}</span></h2>
         <h3>Based on last month's performance the stock is predicted to go delisted in <span class="highlighted">
             {%- if delisting_data.days_until_delisting >= 0 %}
             {{ delisting_data.days_until_delisting }}
