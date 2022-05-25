@@ -38,6 +38,6 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
           role-duration-seconds: 900
-          role-session-name: GitHubActionDeployPureOcean
+          role-session-name: GitHubActionDeployDelistedFyi
       - name: Deploy
         run: bash scripts/upload.sh site ${{ secrets.S3_BUCKET_NAME }} ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
