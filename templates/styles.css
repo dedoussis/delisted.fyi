@@ -4,17 +4,16 @@ body {
 }
 
 .content {
-    font-family: 'Neucha', cursive;
+    font-family: 'Acme', sans-serif;
     text-align: center;
-    color: rgba(0, 0, 0, 0.866);
-    font-size: x-large;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: xx-large;
 }
 
-.center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+.highlighted {
+    color: rgba(107, 107, 107, 0.885);
+}
+
+.x-highlighted {
+    font-size: 500%;
 }

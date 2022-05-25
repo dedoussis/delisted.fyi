@@ -1,6 +1,6 @@
 import argparse
+from collections import deque
 from datetime import datetime
-import json
 from pathlib import Path
 import requests
 import typing as t
@@ -40,15 +40,53 @@ class AlphaVantageClient:
         }
 
 
-def get_closing_avg(client: AlphaVantageClient, symbol: str, days: int) -> float:
-    ts_daily = client.get_time_series_daily(symbol)
+class DelistingData(t.NamedTuple):
+    closing_avg: float
+    days: int
+    delisted: bool
 
+
+def get_delisting_data(
+    client: AlphaVantageClient,
+    symbol: str,
+    window_len: int,
+    closing_avg_threshold: float,
+) -> DelistingData:
+    ts_daily = client.get_time_series_daily(symbol)
     sorted_closes = [v.close for _, v in sorted(ts_daily.items(), reverse=True)]
-    return sum(sorted_closes[:days]) / days
+
+    sorted_closes_window = deque(sorted_closes[:window_len])
+
+    closing_avg = sum(sorted_closes_window) / window_len
+
+    daily_rate_sum = 0
+    for i in range(1, len(sorted_closes_window)):
+        current = sorted_closes_window[i - 1]
+        previous = sorted_closes_window[i]
+
+        daily_rate_sum += (current - previous) / previous
+
+    daily_rate = daily_rate_sum / window_len
+
+    days = -1
+    if daily_rate < 0:
+        days = 0
+        window_closing_sum = sum(sorted_closes_window)
+        while window_closing_sum >= closing_avg_threshold * window_len:
+            window_closing_sum -= sorted_closes_window.pop()
+            sorted_closes_window.appendleft(sorted_closes_window[0] + daily_rate)
+            window_closing_sum += sorted_closes_window[0]
+            days += 1
+
+    return DelistingData(
+        closing_avg=closing_avg,
+        days=days,
+        delisted=closing_avg < closing_avg_threshold,
+    )
 
 
 def make_output(
-    symbol: str, closing_avg: float, template_dir: Path, output_dir: Path
+    symbol: str, delisting_data: DelistingData, template_dir: Path, output_dir: Path
 ) -> None:
     env = Environment(loader=FileSystemLoader(template_dir))
 
@@ -58,7 +96,7 @@ def make_output(
         template = env.get_template(template_name)
         rendered_str = template.render(
             symbol=symbol,
-            closing_avg=closing_avg,
+            delisting_data=delisting_data,
             updated_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         )
 
@@ -113,8 +151,10 @@ def build_parser() -> Namespace:
 def main():
     args = build_parser().parse_args()
     client = AlphaVantageClient(base_url=args.base_url, api_key=args.apikey)
-    closing_avg = get_closing_avg(client, args.symbol, 30)
-    make_output(args.symbol, closing_avg, args.template_dir, args.output_dir)
+    delisting_data = get_delisting_data(
+        client=client, symbol=args.symbol, window_len=30, closing_avg_threshold=1
+    )
+    make_output(args.symbol, delisting_data, args.template_dir, args.output_dir)
 
 
 if __name__ == "__main__":

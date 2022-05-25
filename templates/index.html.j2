@@ -7,17 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Delisted</title>
     <meta name="keywords" content="delisted,nyse,finance,stocks" />
+ 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Acme&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="center content">
-        <h1>How close is {{ symbol }} to being delisted?</h1>
-        <h2>30 trading-day closing average: {{ closing_avg }}</h2>
-        <h3>Last updated at {{ updated_at }}</h3>
+        <h1>Is {{ symbol.upper() }} delisted yet? 🍆</h1>
+        <h2 class="x-highlighted">
+            {%- if delisting_data.delisted %}
+            YES
+            {%- else %}
+            NO
+            {%- endif %}
+        </h2>
+        <h3>30 trading-day closing average: <span class="highlighted">{{ delisting_data.closing_avg }}</span></h2>
+        <h3>Based on last month's performance the stock is predicted to go delisted in <span class="highlighted">
+            {%- if delisting_data.days >= 0 %}
+            {{ delisting_data.days }}
+            {%- else %}
+            ♾️
+            {%- endif %}
+        </span> trading days.</h2>
+        <h4>Last updated at <span class="highlighted">{{ updated_at }}</span></h3>
     </div>
 </body>
 
