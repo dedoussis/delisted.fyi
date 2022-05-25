@@ -7,6 +7,10 @@ import typing as t
 
 from jinja2 import Environment, FileSystemLoader
 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class DailyQuote:
     def __init__(self, raw_data: t.Mapping[str, str]) -> None:
@@ -104,6 +108,7 @@ def make_output(
         output_file_path = output_dir / template_name.rstrip(".j2")
         with output_file_path.open("w+") as f:
             f.write(rendered_str)
+        logger.info("Generated %s", output_file_path)
 
 
 class Args(t.Protocol):
