@@ -3,7 +3,7 @@
 Generate site:
 
 ```console
-$ python -m delisted --symbol bbln --apikey $ALPHAVANTAGE_APIKEY
+$ python -m delisted --symbols bbln amzn --apikey $ALPHAVANTAGE_APIKEY
 Generated ./site/index.html
 Generated ./site/styles.css
 ```
