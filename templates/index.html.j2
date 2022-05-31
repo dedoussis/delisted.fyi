@@ -38,7 +38,7 @@
         if (symbol && Object.keys(data).includes(symbol)) {
             document.getElementById("title").innerHTML = "Is " + symbol.toUpperCase() + " delisted yet? <span role=\"img\" aria-label=\"random-emoji\">" + emojis[random] + "</span>";
             document.getElementById("closingAvg").innerHTML=data[symbol].closingAvg;
-            document.getElementById("daysUntilDelisting").innerHTML=data[symbol].daysUntilDelisting;
+            document.getElementById("daysUntilDelisting").innerHTML=data[symbol].daysUntilDelisting >= 0 ? data[symbol].daysUntilDelisting : "∞";
             document.getElementById("isDelisted").innerHTML=data[symbol].isDelisted? "YES": "NO"; 
         }
     </script>
