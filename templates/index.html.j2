@@ -18,12 +18,17 @@
 </head>
 
 <body>
+    <a target="_blank" rel="noopener noreferrer" href="https://github.com/dedoussis/delisted.fyi">
+        <img loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" style="position: absolute; top: 0; right: 0; border: 0;" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1">
+    </a>
+
     <div class="center content">
         <h1 id="title">Please select a valid symbol! ⚠️</h1>
         <h2 class="x-highlighted" id="isDelisted"></h2>
-        <h3>30 trading-day closing average: <span class="highlighted" id="closingAvg">Boo!</span></h2>
+        <h3>5 trading-day closing average: <span class="highlighted" id="closingAvg">Boo!</span></h2>
         <h3>Based on last month's performance the stock is predicted to go delisted in <span class="highlighted" id="daysUntilDelisting">Argh!</span> trading days.</h2>
         <h4>Last updated at <span class="highlighted">{{ updated_at }}</span></h3>
+        <h4><span role="img" aria-label="information-emoji">ℹ️</span> See section 802.01C of NYSE's continued listing criteria rules: <a target="_blank" rel="noopener noreferrer" href="https://nyseguide.srorules.com/listed-company-manual/document?treeNodeId=csh-da-filter!WKUS-TAL-DOCS-PHC-%7B0588BF4A-D3B5-4B91-94EA-BE9F17057DF0%7D--WKUS_TAL_5667%23teid-167">link!</a></h4>
     </div>
 
     <script>
@@ -37,11 +42,12 @@
 
         if (symbol && Object.keys(data).includes(symbol)) {
             document.getElementById("title").innerHTML = "Is " + symbol.toUpperCase() + " delisted yet? <span role=\"img\" aria-label=\"random-emoji\">" + emojis[random] + "</span>";
-            document.getElementById("closingAvg").innerHTML=data[symbol].closingAvg;
+            document.getElementById("closingAvg").innerHTML=data[symbol].avgClosingPrice;
             document.getElementById("daysUntilDelisting").innerHTML=data[symbol].daysUntilDelisting >= 0 ? data[symbol].daysUntilDelisting : "∞";
             document.getElementById("isDelisted").innerHTML=data[symbol].isDelisted? "YES": "NO"; 
         }
     </script>
+
 </body>
 
 </html>
